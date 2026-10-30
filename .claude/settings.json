@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -v -E 'node_modules|\\\\.lock$|package-lock')",
+      "Bash(npx expo *)",
+      "Bash(python3 -)",
+      "Bash(npx tsc *)"
+    ]
+  }
+}

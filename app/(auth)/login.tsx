@@ -8,11 +8,14 @@ import { saveUserRole, getUserRole } from "../../services/dbService";
 import { TextInput, Button, Text, Surface, useTheme, SegmentedButtons } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTranslation } from "react-i18next";
+import LanguageToggle from "../../components/LanguageToggle";
 
 export default function Login() {
   const { role } = useLocalSearchParams();
   const router = useRouter();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
@@ -37,21 +40,21 @@ export default function Login() {
           rating: 0,
           totalRatings: 0,
         });
-        alert(role === "doctor" ? "Registered successfully. Waiting for admin approval." : "Registered successfully.");
+        alert(role === "doctor" ? t('msg_registered_pending_approval') : t('msg_registered'));
         setIsLogin(true);
       } else {
         const userCred = await loginUser(email, password);
         const userData = await getUserRole(userCred.user.uid);
         
         if (!userData) {
-          alert("User data not found");
+          alert(t('err_user_not_found'));
           return;
         }
 
         if (userData.role === "admin") router.replace("/(admin)/stakeholders");
         else if (userData.role === "doctor") {
           if (userData.status !== "approved") {
-            alert("Waiting for admin approval");
+            alert(t('msg_waiting_approval'));
             return;
           }
           router.replace("/(doctor)/pending");
@@ -69,10 +72,10 @@ export default function Login() {
   };
 
   const roleLabels = {
-    patient: "Patient Portal",
-    doctor: "Doctor Portal",
-    pharmacy: "Pharmacy Portal",
-    admin: "Admin Console"
+    patient: t('portal_patient'),
+    doctor: t('portal_doctor'),
+    pharmacy: t('portal_pharmacy'),
+    admin: t('portal_admin')
   };
 
   return (
@@ -81,8 +84,9 @@ export default function Login() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <Stack.Screen options={{ 
-        title: roleLabels[role] || "Login", 
-        headerBackTitle: "Back"
+        title: roleLabels[role] || t('btn_login'), 
+        headerBackTitle: t('btn_back'),
+        headerRight: () => <LanguageToggle />
       }} />
       
       <LinearGradient colors={['#DBEAFE', '#F8FAFC', '#F8FAFC']} style={{ flex: 1 }}>
@@ -96,10 +100,10 @@ export default function Login() {
               />
             </Surface>
           <Text variant="headlineMedium" style={styles.title}>
-            {isLogin ? "Welcome Back" : "Create Account"}
+            {isLogin ? t('title_welcome_back') : t('title_create_account')}
           </Text>
           <Text variant="bodyMedium" style={styles.subtitle}>
-            Please enter your details to continue.
+            {t('msg_enter_details')}
           </Text>
         </View>
 
@@ -108,15 +112,15 @@ export default function Login() {
             value={isLogin ? 'login' : 'register'}
             onValueChange={val => setIsLogin(val === 'login')}
             buttons={[
-              { value: 'login', label: 'Login' },
-              { value: 'register', label: 'Register' },
+              { value: 'login', label: t('btn_login') },
+              { value: 'register', label: t('btn_register') },
             ]}
             style={{ marginBottom: 24 }}
           />
 
           {!isLogin && (
             <TextInput
-              label="Full Name"
+              label={t('lbl_full_name')}
               mode="outlined"
               left={<TextInput.Icon icon="account-outline" />}
               value={name}
@@ -126,7 +130,7 @@ export default function Login() {
           )}
 
           <TextInput
-            label="Email Address"
+            label={t('lbl_email')}
             mode="outlined"
             keyboardType="email-address"
             autoCapitalize="none"
@@ -137,7 +141,7 @@ export default function Login() {
           />
 
           <TextInput
-            label="Password"
+            label={t('lbl_password')}
             mode="outlined"
             secureTextEntry
             left={<TextInput.Icon icon="lock-outline" />}
@@ -148,7 +152,7 @@ export default function Login() {
 
           {!isLogin && role === "doctor" && (
             <View style={{ marginTop: 8, marginBottom: 16 }}>
-              <Text variant="labelLarge" style={{ marginBottom: 8, color: '#64748B' }}>Specialty</Text>
+              <Text variant="labelLarge" style={{ marginBottom: 8, color: '#64748B' }}>{t('lbl_specialty')}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                 {departments.map((d) => (
                   <Button 
@@ -157,7 +161,7 @@ export default function Login() {
                     onPress={() => setSelectedDept(d)}
                     style={{ marginRight: 8 }}
                   >
-                    {d}
+                    {t(`dept.${d}`, d)}
                   </Button>
                 ))}
               </ScrollView>
@@ -172,7 +176,7 @@ export default function Login() {
             style={styles.actionButton}
             contentStyle={{ paddingVertical: 8 }}
           >
-            {isLogin ? "Login to Portal" : "Complete Registration"}
+            {isLogin ? t('btn_login_portal') : t('btn_complete_registration')}
           </Button>
           </Surface>
         </ScrollView>

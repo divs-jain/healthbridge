@@ -8,6 +8,7 @@ import { Surface, Text, Button, useTheme, ActivityIndicator, Avatar, Appbar } fr
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter, Stack } from "expo-router";
 import { useTranslation } from "react-i18next";
+import LanguageToggle from "../../components/LanguageToggle";
 
 const db = getFirestore(app);
 
@@ -88,23 +89,23 @@ export default function AssignedDoctors() {
 
   const renderItem = ({ item }) => {
     let statusColor = "#64748B";
-    let statusText = item.status;
+    let statusText = t(`status_${item.status}`, item.status);
     let icon = "calendar";
 
     if (item.status === "pending") {
       statusColor = "#F59E0B";
-      statusText = "Waiting for doctor";
+      statusText = t('status_waiting_doctor');
       icon = "clock-outline";
     } else if (item.status === "confirmed") {
       statusColor = theme.colors.secondary;
       icon = "calendar-check";
     } else if (item.status === "in_progress") {
       statusColor = "#EF4444";
-      statusText = item.consultationType === "in_person" ? "Visit Started" : "Call Started";
+      statusText = item.consultationType === "in_person" ? t('status_visit_started') : t('status_call_started');
       icon = item.consultationType === "in_person" ? "map-marker-account" : "video-outline";
     } else if (item.status === "completed" || item.status === "call_ended") {
       statusColor = theme.colors.primary;
-      statusText = "Completed";
+      statusText = t('status_completed');
       icon = "check-circle";
     }
 
@@ -115,8 +116,8 @@ export default function AssignedDoctors() {
         <View style={styles.cardHeader}>
           <Avatar.Icon size={44} icon="doctor" style={{ backgroundColor: statusColor + '15' }} color={statusColor} />
           <View style={styles.infoBox}>
-            <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>Appointment: Dr. {item.doctorName}</Text>
-            <Text variant="bodySmall" style={{ color: '#64748B' }}>{item.department}</Text>
+            <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>{t('lbl_appointment_with', { name: item.doctorName })}</Text>
+            <Text variant="bodySmall" style={{ color: '#64748B' }}>{t(`dept.${item.department}`, item.department)}</Text>
           </View>
           <View style={[styles.pill, { backgroundColor: statusColor + '15' }]}>
             <MaterialCommunityIcons name={icon} size={14} color={statusColor} style={{ marginRight: 4 }} />
@@ -127,14 +128,14 @@ export default function AssignedDoctors() {
         {item.scheduledTime && (
           <View style={styles.timeRow}>
             <MaterialCommunityIcons name="clock-outline" size={16} color="#64748B" />
-            <Text style={styles.timeText}>Scheduled: {item.scheduledDate ? `${item.scheduledDate} at ` : ''}{item.scheduledTime}</Text>
+            <Text style={styles.timeText}>{t('lbl_scheduled')}: {item.scheduledDate ? `${item.scheduledDate} ${t('lbl_at')} ` : ''}{item.scheduledTime}</Text>
           </View>
         )}
 
         {isInPerson && (
           <View style={[styles.timeRow, { marginTop: -8, backgroundColor: theme.colors.primaryContainer + '30' }]}>
             <MaterialCommunityIcons name="map-marker" size={16} color={theme.colors.primary} />
-            <Text style={[styles.timeText, { color: theme.colors.primary }]}>In-Person Visit: {item.location}</Text>
+            <Text style={[styles.timeText, { color: theme.colors.primary }]}>{t('lbl_in_person_visit')}: {item.location}</Text>
           </View>
         )}
 
@@ -146,14 +147,14 @@ export default function AssignedDoctors() {
             style={{ borderRadius: 8, marginBottom: 16 }}
             onPress={() => Linking.openURL(item.videoLink || 'https://meet.google.com/')}
           >
-            Join Video Call
+            {t('join_call')}
           </Button>
         )}
 
         {item.status === "in_progress" && isInPerson && (
           <View style={[styles.timeRow, { backgroundColor: '#FEF2F2', marginTop: -8 }]}>
             <MaterialCommunityIcons name="information" size={16} color="#EF4444" />
-            <Text style={[styles.timeText, { color: '#EF4444' }]}>Please proceed to the doctor's room.</Text>
+            <Text style={[styles.timeText, { color: '#EF4444' }]}>{t('msg_proceed_to_room')}</Text>
           </View>
         )}
 
@@ -161,17 +162,17 @@ export default function AssignedDoctors() {
           <View style={{ marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#F1F5F9' }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
               <MaterialCommunityIcons name="file-document-outline" size={20} color={theme.colors.primary} />
-              <Text style={{ marginLeft: 8, fontWeight: 'bold', fontSize: 16, color: '#0F172A' }}>Digital Prescription</Text>
+              <Text style={{ marginLeft: 8, fontWeight: 'bold', fontSize: 16, color: '#0F172A' }}>{t('lbl_digital_prescription')}</Text>
             </View>
 
             <View style={styles.section}>
-              <Text variant="labelLarge" style={styles.sectionTitle}>Diagnosis</Text>
+              <Text variant="labelLarge" style={styles.sectionTitle}>{t('lbl_diagnosis')}</Text>
               <Text variant="bodyMedium" style={{ color: '#334155' }}>{item.consultation.diagnosis}</Text>
             </View>
 
             {item.consultation.medications?.length > 0 && (
               <View style={styles.section}>
-                <Text variant="labelLarge" style={styles.sectionTitle}>Medicines</Text>
+                <Text variant="labelLarge" style={styles.sectionTitle}>{t('lbl_medicines')}</Text>
                 {item.consultation.medications.map((med, i) => (
                   <View key={i} style={styles.medRow}>
                     <MaterialCommunityIcons name="pill" size={16} color="#64748B" />
@@ -187,19 +188,19 @@ export default function AssignedDoctors() {
             <View style={{ flexDirection: 'column', gap: 8, marginTop: 16 }}>
               {sentConsults[item.consultation.id] ? (
                 <Button mode="contained-tonal" style={{ borderRadius: 8 }} icon="check-circle" disabled>
-                  Sent to Pharmacy
+                  {t('btn_sent_to_pharmacy')}
                 </Button>
               ) : (
                 <Button 
                   mode="contained" 
                   buttonColor={theme.colors.secondary}
                   style={{ borderRadius: 8 }}
-                  icon="pharmacy"
+                  icon="medical-bag"
                   loading={sending[item.consultation.id]}
                   disabled={sending[item.consultation.id]}
                   onPress={() => handleSendToPharmacy(item.consultation)}
                 >
-                  Send to Pharmacy
+                  {t('btn_send_to_pharmacy')}
                 </Button>
               )}
               
@@ -209,7 +210,7 @@ export default function AssignedDoctors() {
                 icon="file-document-outline"
                 onPress={() => router.push({ pathname: "/(patient)/report", params: { appointmentId: item.id }})}
               >
-                View Full Report
+                {t('btn_view_full_report')}
               </Button>
             </View>
           </View>
@@ -223,7 +224,7 @@ export default function AssignedDoctors() {
       setSending(prev => ({ ...prev, [consultation.id]: true }));
       const pharmacyId = await getSequentialPharmacy();
       if (!pharmacyId) {
-        alert("No pharmacies available in the system.");
+        alert(t('err_no_pharmacy_available'));
         setSending(prev => ({ ...prev, [consultation.id]: false }));
         return;
       }
@@ -238,9 +239,9 @@ export default function AssignedDoctors() {
         attemptedPharmacies: [pharmacyId]
       });
 
-      alert("Prescription sent to pharmacy pool!");
+      alert(t('msg_sent_to_pharmacy'));
     } catch (error) {
-      alert("Error sending to pharmacy pool.");
+      alert(t('err_sending_pharmacy'));
     } finally {
       setSending(prev => ({ ...prev, [consultation.id]: false }));
     }
@@ -250,7 +251,8 @@ export default function AssignedDoctors() {
     <View style={[styles.container, { backgroundColor: '#F8FAFC' }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <Appbar.Header style={{ backgroundColor: '#F8FAFC', elevation: 0 }}>
-        <Appbar.Content title="My Doctors" color="#0F172A" titleStyle={{ fontWeight: '800', fontSize: 28 }} />
+        <Appbar.Content title={t('tab_assigned_doctors')} color="#0F172A" titleStyle={{ fontWeight: '800', fontSize: 28 }} />
+        <LanguageToggle color="#1E3A8A" />
       </Appbar.Header>
 
       {loading ? (
@@ -261,7 +263,7 @@ export default function AssignedDoctors() {
         <View style={styles.center}>
           <MaterialCommunityIcons name="doctor" size={64} color="#CBD5E1" />
           <Text variant="titleMedium" style={{ color: '#64748B', marginTop: 16 }}>
-            No assigned doctors or records.
+            {t('msg_no_assigned_doctors')}
           </Text>
         </View>
       ) : (

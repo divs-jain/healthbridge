@@ -6,6 +6,12 @@ import en from './locales/en.json';
 import hi from './locales/hi.json';
 
 const STORE_LANGUAGE_KEY = 'settings.lang';
+const SUPPORTED_LANGUAGES = ['en', 'hi'];
+
+const getDeviceLanguage = () => {
+  const code = Localization.getLocales()?.[0]?.languageCode;
+  return SUPPORTED_LANGUAGES.includes(code) ? code : 'en';
+};
 
 const languageDetectorPlugin = {
   type: 'languageDetector',
@@ -19,10 +25,10 @@ const languageDetectorPlugin = {
           return callback(language);
         }
       }
-      return callback(Localization.locale);
+      return callback(getDeviceLanguage());
     } catch (error) {
       console.log('Error reading language', error);
-      return callback(Localization.locale);
+      return callback(getDeviceLanguage());
     }
   },
   cacheUserLanguage: async function (language) {
@@ -52,6 +58,8 @@ i18n
     resources,
     compatibilityJSON: 'v3',
     fallbackLng: 'en',
+    supportedLngs: SUPPORTED_LANGUAGES,
+    nonExplicitSupportedLngs: true,
     interpolation: {
       escapeValue: false, // react already safes from xss
     },

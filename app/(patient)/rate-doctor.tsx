@@ -4,11 +4,13 @@ import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { addDoctorRating } from "../../services/dbService";
 import { Surface, Text, Button, useTheme, Avatar } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function RateDoctor() {
   const { doctorId, doctorName, department } = useLocalSearchParams();
   const router = useRouter();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const [rating, setRating] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -18,10 +20,10 @@ export default function RateDoctor() {
     setLoading(true);
     try {
       await addDoctorRating(doctorId, rating);
-      alert("Thank you for your feedback!");
+      alert(t('msg_thanks_feedback'));
       router.back();
     } catch (err) {
-      alert("Failed to submit rating");
+      alert(t('err_rating_failed'));
     } finally {
       setLoading(false);
     }
@@ -39,7 +41,7 @@ export default function RateDoctor() {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Stack.Screen options={{ title: "Rate Consultation" }} />
+      <Stack.Screen options={{ title: t('title_rate_consultation') }} />
       
       <Surface style={styles.card} elevation={2}>
         <Avatar.Icon 
@@ -49,9 +51,9 @@ export default function RateDoctor() {
           color={theme.colors.primary} 
         />
         
-        <Text variant="headlineSmall" style={styles.title}>How was your visit?</Text>
+        <Text variant="headlineSmall" style={styles.title}>{t('msg_how_was_visit')}</Text>
         <Text variant="bodyLarge" style={styles.subtitle}>
-          Dr. {doctorName} ({department})
+          {t('lbl_dr', { name: doctorName })} ({t(`dept.${department}`, department)})
         </Text>
 
         <View style={styles.starsContainer}>
@@ -70,14 +72,14 @@ export default function RateDoctor() {
           style={styles.submitButton}
           contentStyle={{ paddingVertical: 8 }}
         >
-          Submit Rating
+          {t('btn_submit_rating')}
         </Button>
         <Button 
           mode="text" 
           onPress={() => router.back()} 
           style={{ marginTop: 8 }}
         >
-          Skip
+          {t('btn_skip')}
         </Button>
       </Surface>
     </View>

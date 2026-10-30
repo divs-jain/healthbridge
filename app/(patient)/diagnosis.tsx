@@ -8,6 +8,8 @@ import { Appbar, Text, TextInput, Button, Surface, ActivityIndicator, useTheme, 
 import { useTranslation } from "react-i18next";
 import * as Network from 'expo-network';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import VoiceInputButton from "../../components/VoiceInputButton";
+import LanguageToggle from "../../components/LanguageToggle";
 
 export default function Diagnosis() {
   const { t, i18n } = useTranslation();
@@ -28,16 +30,16 @@ export default function Diagnosis() {
     setIsOffline(!networkState.isConnected);
   };
 
-  const toggleLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'hi' : 'en';
-    i18n.changeLanguage(newLang);
-  };
-
   const handleCheck = async () => {
     if (!symptoms) return;
     setLoading(true);
-    const aiText = await getAISuggestion(symptoms, null);
+    const language = i18n.language?.startsWith('hi') ? 'hi' : 'en';
+    const aiText = await getAISuggestion(symptoms, language);
     handleAIResponse(aiText);
+  };
+
+  const handleTranscript = (text) => {
+    setSymptoms((prev) => (prev.trim() ? `${prev.trim()} ${text}` : text));
   };
 
   const handleAIResponse = async (aiText) => {
@@ -69,7 +71,7 @@ export default function Diagnosis() {
       
       <Appbar.Header style={{ backgroundColor: theme.colors.primary, elevation: 0 }}>
         <Appbar.Content title={t('app_title')} color="#FFF" titleStyle={{ fontWeight: 'bold' }} />
-        <Appbar.Action icon="translate" iconColor="#FFF" onPress={toggleLanguage} />
+        <LanguageToggle />
         <Appbar.Action icon="logout" iconColor="#FFF" onPress={() => { getAuth().signOut(); router.replace("/"); }} />
       </Appbar.Header>
 
@@ -85,7 +87,7 @@ export default function Diagnosis() {
             <Avatar.Icon size={40} icon="robot-outline" style={{ backgroundColor: theme.colors.primaryContainer }} color={theme.colors.primary} />
             <View style={{ marginLeft: 12 }}>
               <Text variant="titleMedium" style={{ fontWeight: 'bold' }}>{t('lbl_ai_checker', 'AI Symptom Checker')}</Text>
-              <Text variant="bodySmall" style={{ color: '#64748B' }}>Powered by Gemini Flash</Text>
+              <Text variant="bodySmall" style={{ color: '#64748B' }}>{t('lbl_powered_by')}</Text>
             </View>
           </View>
           
@@ -96,6 +98,7 @@ export default function Diagnosis() {
             </View>
           ) : (
             <View>
+              <VoiceInputButton onTranscript={handleTranscript} disabled={loading} />
               <TextInput
                 mode="outlined"
                 placeholder={t('symptoms_placeholder')}
@@ -113,7 +116,7 @@ export default function Diagnosis() {
                 disabled={loading || !symptoms}
                 style={styles.aiButton}
                 contentStyle={{ paddingVertical: 4 }}
-                icon={loading ? null : "sparkles"}
+                icon={loading ? undefined : "creation"}
               >
                 {loading ? t('btn_analyzing', 'Analyzing...') : t('check_ai')}
               </Button>
@@ -134,7 +137,7 @@ export default function Diagnosis() {
 
             {result.first_aid && (
               <View style={{ marginTop: 16, backgroundColor: '#FEF2F2', padding: 12, borderRadius: 12, borderWidth: 1, borderColor: '#FECACA' }}>
-                <Text variant="labelLarge" style={{ color: '#991B1B', marginBottom: 4 }}>First Aid / Next Steps</Text>
+                <Text variant="labelLarge" style={{ color: '#991B1B', marginBottom: 4 }}>{t('lbl_first_aid')}</Text>
                 <Text variant="bodyMedium" style={{ color: '#7F1D1D' }}>{result.first_aid}</Text>
               </View>
             )}
@@ -143,7 +146,7 @@ export default function Diagnosis() {
             <View style={styles.pillContainer}>
               {result.doctors?.map((d, i) => (
                 <View key={i} style={[styles.pill, { backgroundColor: theme.colors.secondaryContainer }]}>
-                  <Text style={[styles.pillText, { color: theme.colors.secondary }]}>{d}</Text>
+                  <Text style={[styles.pillText, { color: theme.colors.secondary }]}>{t(`dept.${d}`, d)}</Text>
                 </View>
               ))}
             </View>

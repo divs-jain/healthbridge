@@ -8,6 +8,7 @@ import { Surface, Text, Button, useTheme, ActivityIndicator, Appbar } from "reac
 import { Stack } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import LanguageToggle from "../../components/LanguageToggle";
 
 const db = getFirestore(app);
 
@@ -103,9 +104,9 @@ export default function Pharmacies() {
 
   const getStatusInfo = (status) => {
     switch(status) {
-      case 'ready': return { color: '#10B981', icon: 'check-circle', text: 'Ready for Pickup' };
-      case 'accepted': return { color: '#3B82F6', icon: 'package-variant', text: 'Preparing Order' };
-      default: return { color: '#F59E0B', icon: 'clock-outline', text: 'Processing' };
+      case 'ready': return { color: '#10B981', icon: 'check-circle', text: t('status_ready_pickup') };
+      case 'accepted': return { color: '#3B82F6', icon: 'package-variant', text: t('status_preparing_order') };
+      default: return { color: '#F59E0B', icon: 'clock-outline', text: t('status_processing') };
     }
   };
 
@@ -113,7 +114,8 @@ export default function Pharmacies() {
     <View style={[styles.container, { backgroundColor: '#F8FAFC' }]}>
       <Stack.Screen options={{ headerShown: false }} />
       <Appbar.Header style={{ backgroundColor: '#F8FAFC', elevation: 0 }}>
-        <Appbar.Content title="Pharmacy Queue" color="#0F172A" titleStyle={{ fontWeight: '800', fontSize: 28 }} />
+        <Appbar.Content title={t('title_pharmacy_queue')} color="#0F172A" titleStyle={{ fontWeight: '800', fontSize: 28 }} />
+        <LanguageToggle color="#1E3A8A" />
       </Appbar.Header>
 
       {loading ? (
@@ -124,7 +126,7 @@ export default function Pharmacies() {
         <View style={styles.center}>
           <MaterialCommunityIcons name="pill" size={64} color="#CBD5E1" />
           <Text variant="titleMedium" style={{ color: '#64748B', marginTop: 16 }}>
-            No prescriptions found.
+            {t('no_records_found')}
           </Text>
         </View>
       ) : (
@@ -148,7 +150,7 @@ export default function Pharmacies() {
                   </View>
                 </View>
                 
-                <Text style={styles.sectionTitle}>Prescribed Medications</Text>
+                <Text style={styles.sectionTitle}>{t('lbl_prescribed_medications')}</Text>
                 {item.medications?.map((med, i) => (
                   <View key={i} style={styles.medRow}>
                     <MaterialCommunityIcons name="pill" size={16} color="#64748B" />
@@ -163,7 +165,7 @@ export default function Pharmacies() {
                   <View style={styles.locationRow}>
                     <MaterialCommunityIcons name="map-marker" size={20} color="#059669" />
                     <Text style={{ marginLeft: 8, color: '#065F46', flex: 1, fontSize: 13, fontWeight: '600' }}>
-                      Pickup at: {item.location.name || item.location.address}
+                      {t('lbl_pickup_at')}: {item.location.name || item.location.address}
                     </Text>
                   </View>
                 )}

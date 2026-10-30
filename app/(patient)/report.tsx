@@ -15,6 +15,7 @@ import { Button, Text, View } from "react-native";
 import { app } from "../../config/firebaseConfig";
 
 import { RadioButton } from "react-native-paper";
+import { useTranslation } from "react-i18next";
 import { addDoctorRating, getOptimalPharmacy } from "../../services/dbService";
 
 const db = getFirestore(app);
@@ -23,6 +24,7 @@ export default function Report() {
   const { appointmentId } = useLocalSearchParams();
   const [report, setReport] = useState(null);
   const [rating, setRating] = useState("");
+  const { t } = useTranslation();
 
   useEffect(() => {
     const fetchReport = async () => {
@@ -50,7 +52,7 @@ export default function Report() {
 
     const pharmacyId = await getOptimalPharmacy();
     if (!pharmacyId) {
-      alert("No pharmacies available at the moment.");
+      alert(t('err_no_pharmacy_available'));
       return;
     }
 
@@ -64,14 +66,14 @@ export default function Report() {
       createdAt: new Date(),
     });
 
-    alert("Prescription assigned and sent to pharmacy successfully.");
+    alert(t('msg_sent_to_pharmacy'));
   };
 
   // ⭐ Submit rating
   const handleRating = async () => {
     try {
       if (!rating) {
-        alert("Please select rating");
+        alert(t('err_select_rating'));
         return;
       }
 
@@ -83,14 +85,14 @@ export default function Report() {
         rating: Number(rating),
       });
 
-      alert("Rating submitted");
+      alert(t('msg_thanks_feedback'));
 
       // update UI instantly
       setReport({ ...report, rating: Number(rating) });
 
     } catch (error) {
       console.log("RATING ERROR:", error);
-      alert("Error submitting rating");
+      alert(t('err_rating_failed'));
     }
   };
 
@@ -99,7 +101,7 @@ export default function Report() {
     return (
       <View style={{ padding: 20 }}>
         <Text style={{ fontSize: 18 }}>
-          Please open a report from the Appointments page
+          {t('msg_open_report_from_appointments')}
         </Text>
       </View>
     );
@@ -109,7 +111,7 @@ export default function Report() {
   if (!report) {
     return (
       <View style={{ padding: 20 }}>
-        <Text>No consultation available yet</Text>
+        <Text>{t('msg_no_consultation_yet')}</Text>
       </View>
     );
   }
@@ -118,15 +120,15 @@ export default function Report() {
     <View style={{ flex: 1, padding: 20, backgroundColor: "#fff" }}>
       
       <Text style={{ fontSize: 20, marginBottom: 15 }}>
-        Consultation Report
+        {t('title_consultation_report')}
       </Text>
 
-      <Text>Heart Rate: {report.heartRate}</Text>
-      <Text>O2 Level: {report.o2Level}</Text>
-      <Text>Diagnosis: {report.diagnosis}</Text>
+      <Text>{t('lbl_heart_rate')}: {report.heartRate}</Text>
+      <Text>{t('lbl_o2_level')}: {report.o2Level}</Text>
+      <Text>{t('lbl_diagnosis')}: {report.diagnosis}</Text>
 
       <Text style={{ marginTop: 10, fontWeight: "bold" }}>
-        Medicines:
+        {t('lbl_medicines')}:
       </Text>
 
       {report.medications?.map((med, index) => (
@@ -134,19 +136,19 @@ export default function Report() {
           <Text>
             {med.slNo}. {med.name}
           </Text>
-          <Text>Dosage: {med.dosage}</Text>
-          <Text>Instructions: {med.instructions}</Text>
+          <Text>{t('lbl_dosage_short')}: {med.dosage}</Text>
+          <Text>{t('lbl_instructions_short')}: {med.instructions}</Text>
         </View>
       ))}
 
       <Text style={{ marginTop: 10 }}>
-        Remarks: {report.remarks}
+        {t('lbl_remarks')}: {report.remarks}
       </Text>
 
       {/* ⭐ RATING SECTION */}
       {!report.rating ? (
         <View style={{ marginTop: 20 }}>
-          <Text style={{ fontWeight: "bold" }}>Rate Doctor:</Text>
+          <Text style={{ fontWeight: "bold" }}>{t('rate_doctor')}:</Text>
 
           <RadioButton.Group
             onValueChange={(value) => setRating(value)}
@@ -158,23 +160,23 @@ export default function Report() {
                 style={{ flexDirection: "row", alignItems: "center" }}
               >
                 <RadioButton value={num.toString()} />
-                <Text>{num} Star</Text>
+                <Text>{t('lbl_stars', { count: num })}</Text>
               </View>
             ))}
           </RadioButton.Group>
 
-          <Button title="Submit Rating" onPress={handleRating} />
+          <Button title={t('btn_submit_rating')} onPress={handleRating} />
         </View>
       ) : (
         <View style={{ marginTop: 20 }}>
-          <Text>⭐ You rated: {report.rating}</Text>
+          <Text>⭐ {t('lbl_you_rated', { rating: report.rating })}</Text>
         </View>
       )}
 
       {/* 🏥 SEND TO PHARMACY */}
       <View style={{ marginTop: 20 }}>
         <Button
-          title="Send to Pharmacy"
+          title={t('btn_send_to_pharmacy')}
           onPress={handleSendToPharmacy}
         />
       </View>

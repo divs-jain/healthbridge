@@ -54,7 +54,7 @@ export default function PatientLayout() {
         options={{
           title: t('tab_pharmacies', 'Pharmacies'),
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="pharmacy" size={26} color={color} />
+            <MaterialCommunityIcons name="medical-bag" size={26} color={color} />
           ),
         }}
       />

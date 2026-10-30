@@ -5,12 +5,14 @@ import { getApprovedDoctors, createAppointment, getUserRole, hasActiveAppointmen
 import { Card, Text, Button, Avatar, Surface, useTheme, ActivityIndicator } from "react-native-paper";
 import { getAuth } from "firebase/auth";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useTranslation } from "react-i18next";
 
 export default function Doctors() {
   const { departments } = useLocalSearchParams();
   const parsedDepartments = departments ? JSON.parse(departments) : [];
   const theme = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
 
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ export default function Doctors() {
       const hasActive = await hasActiveAppointment(user.uid, doctor.id);
 
       if (hasActive) {
-        alert("You already have an active or pending appointment with this doctor.");
+        alert(t('err_active_appointment'));
         return;
       }
 
@@ -62,9 +64,9 @@ export default function Doctors() {
         status: "pending",
         createdAt: new Date(),
       });
-      alert("Appointment request sent successfully!");
+      alert(t('msg_appointment_requested'));
     } catch (err) {
-      alert("Failed to book: " + err.message);
+      alert(t('err_booking_failed') + " " + err.message);
     } finally {
       setBookingId(null);
     }
@@ -89,15 +91,15 @@ export default function Doctors() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-      <Stack.Screen options={{ title: "Find a Doctor", headerBackTitle: "Back" }} />
+      <Stack.Screen options={{ title: t('title_find_doctor'), headerBackTitle: t('btn_back') }} />
       
       {parsedDepartments.length > 0 && (
         <View style={styles.filterHeader}>
-          <Text variant="titleMedium" style={{ fontWeight: '600' }}>Showing specialists for:</Text>
+          <Text variant="titleMedium" style={{ fontWeight: '600' }}>{t('lbl_showing_specialists')}</Text>
           <View style={styles.pillContainer}>
             {parsedDepartments.map((d, i) => (
               <View key={i} style={[styles.pill, { backgroundColor: theme.colors.primaryContainer }]}>
-                <Text style={[styles.pillText, { color: theme.colors.primary }]}>{d}</Text>
+                <Text style={[styles.pillText, { color: theme.colors.primary }]}>{t(`dept.${d}`, d)}</Text>
               </View>
             ))}
           </View>
@@ -111,7 +113,7 @@ export default function Doctors() {
       ) : doctors.length === 0 ? (
         <View style={styles.center}>
           <MaterialCommunityIcons name="stethoscope" size={64} color="#CBD5E1" />
-          <Text variant="titleMedium" style={{ color: '#64748B', marginTop: 16 }}>No doctors found for this specialty.</Text>
+          <Text variant="titleMedium" style={{ color: '#64748B', marginTop: 16 }}>{t('msg_no_doctors_found')}</Text>
         </View>
       ) : (
         <FlatList
@@ -123,11 +125,11 @@ export default function Doctors() {
               <View style={styles.cardHeader}>
                 <Avatar.Text size={50} label={item.name?.substring(0, 2).toUpperCase()} style={{ backgroundColor: theme.colors.secondaryContainer }} color={theme.colors.secondary} />
                 <View style={styles.cardInfo}>
-                  <Text variant="titleMedium" style={{ fontWeight: "bold" }}>Dr. {item.name}</Text>
-                  <Text variant="bodyMedium" style={{ color: '#64748B' }}>{item.department}</Text>
+                  <Text variant="titleMedium" style={{ fontWeight: "bold" }}>{t('lbl_dr', { name: item.name })}</Text>
+                  <Text variant="bodyMedium" style={{ color: '#64748B' }}>{t(`dept.${item.department}`, item.department)}</Text>
                   <View style={styles.ratingRow}>
                     {renderStars(item.rating || 0)}
-                    <Text style={styles.ratingText}>{item.rating?.toFixed(1) || "0.0"} ({item.totalRatings || 0} reviews)</Text>
+                    <Text style={styles.ratingText}>{item.rating?.toFixed(1) || "0.0"} ({t('lbl_reviews', { count: item.totalRatings || 0 })})</Text>
                   </View>
                 </View>
               </View>
@@ -140,7 +142,7 @@ export default function Doctors() {
                 disabled={bookingId === item.id}
                 onPress={() => handleBook(item)}
               >
-                Request Appointment
+                {t('btn_request_appointment')}
               </Button>
             </Surface>
           )}

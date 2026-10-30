@@ -3,12 +3,15 @@ import { useRouter, Stack } from "expo-router";
 import { Button, Text, Surface, useTheme } from "react-native-paper";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTranslation } from "react-i18next";
+import LanguageToggle from "../../components/LanguageToggle";
 
 const { width } = Dimensions.get('window');
 
 export default function RoleSelect() {
   const router = useRouter();
   const theme = useTheme();
+  const { t } = useTranslation();
 
   const RoleCard = ({ title, icon, role, description, color }) => (
     <Surface style={[styles.card, { shadowColor: color }]} elevation={4}>
@@ -26,7 +29,7 @@ export default function RoleSelect() {
         style={styles.cardButton}
         labelStyle={{ fontWeight: '700' }}
       >
-        Select
+        {t('btn_select')}
       </Button>
     </Surface>
   );
@@ -37,45 +40,48 @@ export default function RoleSelect() {
       style={styles.container}
     >
       <Stack.Screen options={{ headerShown: false }} />
+      <View style={styles.languageToggle}>
+        <LanguageToggle color={theme.colors.primary} />
+      </View>
       
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={[styles.logoContainer, { shadowColor: theme.colors.primary }]}>
             <MaterialCommunityIcons name="heart-pulse" size={48} color={theme.colors.primary} />
           </View>
-          <Text variant="displaySmall" style={styles.title}>HealthBridge</Text>
+          <Text variant="displaySmall" style={styles.title}>{t('app_title')}</Text>
           <Text variant="bodyLarge" style={styles.subtitle}>
-            Connecting rural communities to world-class healthcare.
+            {t('app_tagline')}
           </Text>
         </View>
 
         <View style={styles.rolesContainer}>
           <RoleCard 
-            title="Patient" 
+            title={t('role_patient')} 
             icon="account-heart" 
             role="patient" 
-            description="Access doctors and AI checker"
+            description={t('role_patient_desc')}
             color={theme.colors.primary} 
           />
           <RoleCard 
-            title="Doctor" 
+            title={t('role_doctor')} 
             icon="stethoscope" 
             role="doctor" 
-            description="Manage your appointments"
+            description={t('role_doctor_desc')}
             color={theme.colors.secondary} 
           />
           <RoleCard 
-            title="Pharmacy" 
+            title={t('role_pharmacy')} 
             icon="pill" 
             role="pharmacy" 
-            description="Manage inventory & orders"
+            description={t('role_pharmacy_desc')}
             color="#8B5CF6" 
           />
           <RoleCard 
-            title="Administrator" 
+            title={t('role_admin')} 
             icon="shield-account" 
             role="admin" 
-            description="System oversight & escalations"
+            description={t('role_admin_desc')}
             color="#F59E0B" 
           />
         </View>
@@ -87,6 +93,12 @@ export default function RoleSelect() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  languageToggle: {
+    position: 'absolute',
+    top: 48,
+    right: 16,
+    zIndex: 1,
   },
   scrollContent: {
     padding: 24,
